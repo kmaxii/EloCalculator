@@ -21,11 +21,18 @@ public class Team {
     }
 
     public void AddPlayer(ELOPlayer player) {
+
+        if (team.size() == 5){
+            System.out.println("ERROR");
+        }
+
         team.add(player);
     }
 
     public void removePlayer(ELOPlayer player) {
-        team.remove(player);
+        if (!team.remove(player)){
+            System.out.println("ERROR");
+        }
     }
 
     public Double getAverageElo(){

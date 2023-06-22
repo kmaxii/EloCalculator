@@ -28,6 +28,8 @@ public class TeamList implements Iterable<Team> {
     }
 
 
+
+
     public int getTeamIndex(Team team){
         return teams.indexOf(team);
     }
@@ -47,6 +49,9 @@ public class TeamList implements Iterable<Team> {
     }
 
     public void swapPlayerTeams(int team1, int team2, ELOPlayer player1, ELOPlayer player2){
+        if (team1 == team2)
+            return;
+
         teams.get(team1).removePlayer(player1);
         teams.get(team2).removePlayer(player2);
         teams.get(team1).AddPlayer(player2);
@@ -56,10 +61,7 @@ public class TeamList implements Iterable<Team> {
     public void swapPlayerTeams(int team1, int team2, int player1Index, int player2Index){
         ELOPlayer player1 = teams.get(team1).getPlayer(player1Index);
         ELOPlayer player2 = teams.get(team2).getPlayer(player2Index);
-        teams.get(team1).removePlayer(player1);
-        teams.get(team2).removePlayer(player2);
-        teams.get(team1).AddPlayer(player2);
-        teams.get(team2).AddPlayer(player1);
+        swapPlayerTeams(team1, team2, player1, player2);
     }
 
     public int teamAmount(){
