@@ -48,4 +48,8 @@ public class Team {
         return team.stream();
     }
 
+    @Override
+    public String toString() {
+        return team.toString();
+    }
 }

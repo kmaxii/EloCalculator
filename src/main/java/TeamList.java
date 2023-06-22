@@ -80,6 +80,13 @@ public class TeamList implements Iterable<Team> {
         throw new IllegalArgumentException("Player " + player + " not found in any team.");
     }
 
+    @Override
+    public String toString() {
+        return "TeamList{" +
+                "teams=" + teams +
+                '}';
+    }
+
     public static boolean inTeamWithReq(Team team, ELOPlayer player){
         return team.contains(player.teamRequest);
     }
@@ -99,4 +106,5 @@ public class TeamList implements Iterable<Team> {
             return teams.get(index++);
         }
     }
+
 }
