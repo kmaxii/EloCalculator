@@ -4,15 +4,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class TeamList implements Iterable<Team> {
-    List<Team> teams;
+    private final List<Team> teams;
 
-    public TeamList(List<Team> teamList) {
-        this.teams = teamList;
-    }
-
-    /**
+     /**
      * Copy constructor
-     * @param teamList
+     * @param teamList The TeamList to copy
      */
     public TeamList(TeamList teamList) {
         this.teams = new ArrayList<>(teamList.teams);
@@ -23,16 +19,6 @@ public class TeamList implements Iterable<Team> {
         this.teams = new ArrayList<>();
     }
 
-    public List<Team> getTeams() {
-        return teams;
-    }
-
-
-
-
-    public int getTeamIndex(Team team){
-        return teams.indexOf(team);
-    }
 
     public Team getTeam(int index){
         return teams.get(index);

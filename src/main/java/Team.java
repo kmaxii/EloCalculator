@@ -1,11 +1,9 @@
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Team {
 
-    private List<ELOPlayer> team;
+    private final List<ELOPlayer> team;
 
     public Team(List<ELOPlayer> team) {
         this.team = team;
@@ -16,13 +14,9 @@ public class Team {
     }
 
 
-    public Team() {
-        this.team = new ArrayList<>();
-    }
-
     public void AddPlayer(ELOPlayer player) {
 
-        if (team.size() == 5){
+        if (team.size() == 5) {
             System.out.println("ERROR");
         }
 
@@ -30,12 +24,11 @@ public class Team {
     }
 
     public void removePlayer(ELOPlayer player) {
-        if (!team.remove(player)){
-            System.out.println("ERROR");
-        }
+        team.remove(player);
+
     }
 
-    public Double getAverageElo(){
+    public Double getAverageElo() {
         return team.stream().mapToDouble(p -> p.elo).sum() / team.size();
     }
 
@@ -45,10 +38,6 @@ public class Team {
 
     public ELOPlayer getPlayer(int index) {
         return team.get(index);
-    }
-
-    public List<ELOPlayer> getTeam() {
-        return team;
     }
 
     public Stream<ELOPlayer> stream() {

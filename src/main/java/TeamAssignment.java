@@ -36,10 +36,21 @@ public class TeamAssignment {
         System.out.println("PREFERENCES:\n" + preferences + "\n");
 
         List<Pair<Integer, TeamList>> scoredPool = makeAssignments(preferences);
-        TeamList teams =  scoredPool.get(0).value();
-
         scoredPool.sort(Collections.reverseOrder());
 
+
+        System.out.println("FINAL SCORES: ");
+        for (int i = 0; i < scoredPool.size(); i++) {
+          //  System.out.println(i + ": " + scoredPool.get(i).key());
+            System.out.println(i + ": "  + scoreFunction(scoredPool.get(i).value(), preferences));
+        }
+
+
+        TeamList teams =  scoredPool.get(0).value();
+
+
+
+        System.out.println("SCORE:" + scoreFunction(teams, preferences));
 
         System.out.println("PREFERENCES:");
         for (var preference : preferences){
@@ -71,16 +82,14 @@ public class TeamAssignment {
                 .sorted(Collections.reverseOrder())
                 .collect(Collectors.toList());
 
-
-
         for (int i = 0; i < TeamAssignment.nGenerations; i++) {
-            var children1 = scoredPool.stream()
+            List<TeamList> children1 = scoredPool.stream()
                     .limit(scoredPool.size() - podium)
                     .map(o -> makeChild(o.value))
                     .toList();
 
-            var children2 = scoredPool.stream()
-                    .limit(scoredPool.size() - podium)
+            List<TeamList> children2 = scoredPool.stream()
+                            .limit(scoredPool.size() - podium)
                     .map(o -> makeChild(o.value))
                     .toList();
 
@@ -106,10 +115,19 @@ public class TeamAssignment {
 
             scoredPool = newPool.stream()
                     .map(teams -> new Pair<>(scoreFunction(teams, preferences), teams))
-                    .sorted(Collections.reverseOrder())
                     .collect(Collectors.toList());
 
-            scoredPool.addAll(top10TeamsBefore);
+
+
+            scoredPool.addAll(top10TeamsBefore.stream().map(pair -> new Pair<>(scoreFunction(pair.value, preferences), pair.value)).toList());
+
+            scoredPool = scoredPool.stream()
+                    .sorted(Comparator.comparing(e -> e.key))
+                    .sorted(Collections.reverseOrder()).collect(Collectors.toList());
+
+            System.out.println("Scored Pool");
+            System.out.println(scoredPool.stream().map(e -> e.key).collect(Collectors.toList()));
+
 
         }
 
@@ -257,13 +275,20 @@ public class TeamAssignment {
                 satisfiedPreferences++;
             }
         }
+
         //% of preferences filled
         double prefScore = 100.0 * (satisfiedPreferences / (double) preferences.size());
         List<Double> combinedElos = teams.stream()
                 .map(Team::getAverageElo)
                 .collect(Collectors.toList());
         double eloScore = (500000.0 - pVariance(combinedElos)) / 5000.0;
-        return (int) (prefScore + eloScore);
+
+        int totalScore = (int) (prefScore + eloScore);
+
+        System.out.println(totalScore);
+
+
+        return totalScore;
     }
 
 
@@ -289,6 +314,12 @@ public class TeamAssignment {
     }
 
 
+    /**
+     * Variance is a statistical measure that quantifies the spread or dispersion of a set of data points.
+     * It provides an indication of how much the individual data points deviate from the mean (average) of the data set.
+     * @param elos The elos to calculate the variance from
+     * @return the variance of the elos
+     */
     private static double pVariance(List<Double> elos) {
         double mean = mean(elos);
         double sum = 0.0;
