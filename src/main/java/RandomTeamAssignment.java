@@ -62,4 +62,26 @@ public class RandomTeamAssignment {
         }
         return buffer.toString();
     }
+
+    private static int getRandomElo() {
+        Random r = new Random();
+        return r.nextInt((1000) + 1) + 1000;
+    }
+
+    private static ELOPlayer getRandomPlayer() {
+        return new ELOPlayer(generateRandomString(), getRandomElo(), null);
+    }
+
+    public static TeamList getRandomTeamList(int teamAmount, int playersPerTeam){
+        TeamList teamList = new TeamList();
+
+        for (int i = 0; i < teamAmount; i++) {
+            ArrayList<ELOPlayer> team = new ArrayList<>();
+            for (int j = 0; j < playersPerTeam; j++) {
+                team.add(RandomTeamAssignment.getRandomPlayer());
+            }
+            teamList.addTeam(new Team(team));
+        }
+        return teamList;
+    }
 }
