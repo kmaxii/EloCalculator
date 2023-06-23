@@ -10,7 +10,7 @@ public class TeamAssignment {
     private static final int nGenerations = 400;
 
     private List<ELOPlayer> players;
-    private List<Pair<ELOPlayer, ELOPlayer>> preferences;
+    public List<Pair<ELOPlayer, ELOPlayer>> preferences;
 
     public static void main(String[] args) {
         TeamAssignment teamAssignment = RandomTeamAssignment.getRandomTeamAssignment(nPlayers, 7);
@@ -21,16 +21,18 @@ public class TeamAssignment {
     public TeamAssignment(List<ELOPlayer> players, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
         this.players = players;
         this.preferences = preferences;
+
+        for (Pair<ELOPlayer, ELOPlayer> preference : preferences) {
+            preference.key().teamRequest = preference.value();
+            preference.value().teamRequest = preference.key();
+        }
     }
 
     public void run() {
 
         System.out.println("There are " + players.size() + " players");
 
-        for (Pair<ELOPlayer, ELOPlayer> preference : preferences) {
-            preference.key().teamRequest = preference.value();
-            preference.value().teamRequest = preference.key();
-        }
+
 
         System.out.println("PLAYERS:\n" + players + "\n");
         System.out.println("PREFERENCES:\n" + preferences + "\n");
@@ -40,19 +42,19 @@ public class TeamAssignment {
 
         System.out.println("FINAL SCORES: ");
         for (int i = 0; i < scoredPool.size(); i++) {
-          //  System.out.println(i + ": " + scoredPool.get(i).key()());
-            System.out.println(i + ": "  + scoreFunction(scoredPool.get(i).value(), preferences));
+            //  System.out.println(i + ": " + scoredPool.get(i).key()());
+            System.out.println(i + ": " + scoreFunction(scoredPool.get(i).value()));
         }
 
 
-        TeamList teams =  scoredPool.get(0).value();
+        TeamList teams = scoredPool.get(0).value();
 
-        System.out.println("SCORE:" + scoreFunction(teams, preferences));
+        System.out.println("SCORE:" + scoreFunction(teams));
 
         System.out.println("PREFERENCES:");
-        for (var preference : preferences){
+        for (var preference : preferences) {
             System.out.println(preference.key().elo + " " + preference.value().elo);
-            if (teams.findPlayersTeam(preference.key()) == teams.findPlayersTeam(preference.value())){
+            if (teams.findPlayersTeam(preference.key()) == teams.findPlayersTeam(preference.value())) {
                 System.out.println("TRUE");
             }
 
@@ -68,14 +70,13 @@ public class TeamAssignment {
     }
 
 
-
     public List<Pair<Integer, TeamList>> makeAssignments() {
         int podium = 10;
         List<TeamList> pool = initPool();
         List<Pair<Integer, TeamList>> scoredPool = new ArrayList<>();
 
         for (TeamList teams : pool) {
-            scoredPool.add(new Pair<>(scoreFunction(teams, preferences), teams));
+            scoredPool.add(new Pair<>(scoreFunction(teams), teams));
         }
         Collections.sort(scoredPool, Collections.reverseOrder());
 
@@ -92,15 +93,15 @@ public class TeamAssignment {
                 TeamList child1 = scoredPool.get(j).value().makeChild();
                 TeamList child2 = scoredPool.get(j).value().makeChild();
 
-                if (child1 != child2){
+                if (child1 != child2) {
                     System.out.println("Not same children");
-                    System.out.println("Child 1 score" + scoreFunction(child1, preferences));
-                    System.out.println("Child 2 score" + scoreFunction(child2, preferences));
+                    System.out.println("Child 1 score" + scoreFunction(child1));
+                    System.out.println("Child 2 score" + scoreFunction(child2));
                 }
 
                 double expScoreParent = Math.exp(parentScore);
-                double expScoreChild1 = Math.exp(scoreFunction(child1, preferences));
-                double expScoreChild2 = Math.exp(scoreFunction(child2, preferences));
+                double expScoreChild1 = Math.exp(scoreFunction(child1));
+                double expScoreChild2 = Math.exp(scoreFunction(child2));
                 double[] weights = {expScoreParent, expScoreChild1, expScoreChild2};
 
                 TeamList chosenTeam = ChoicesFunction.choices(Arrays.asList(parent, child1, child2), weights, random);
@@ -108,14 +109,14 @@ public class TeamAssignment {
                 System.out.println("Parent: " + expScoreParent);
                 System.out.print(", Child 1: " + expScoreChild1);
                 System.out.print(", Child 2: " + expScoreChild2);
-                System.out.println(", Chosen: " + Math.exp(scoreFunction(chosenTeam, preferences)));
-                if (chosenTeam == parent){
+                System.out.println(", Chosen: " + Math.exp(scoreFunction(chosenTeam)));
+                if (chosenTeam == parent) {
                     System.out.println("Choose parent");
                 }
-                if (chosenTeam == child1){
+                if (chosenTeam == child1) {
                     System.out.println("Choose child1");
                 }
-                if (chosenTeam == child2){
+                if (chosenTeam == child2) {
                     System.out.println("Choose child2");
                 }
 
@@ -129,7 +130,7 @@ public class TeamAssignment {
             scoredPool = new ArrayList<>();
 
             for (TeamList teams : newPool) {
-                scoredPool.add(new Pair<>(scoreFunction(teams, preferences), teams));
+                scoredPool.add(new Pair<>(scoreFunction(teams), teams));
             }
             scoredPool = scoredPool.stream()
                     .sorted(Comparator.comparing(e -> e.key()))
@@ -138,7 +139,7 @@ public class TeamAssignment {
             System.out.println("-------------------");
             System.out.println();
 
-            for (int j = 0; j< scoredPool.size(); j++){
+            for (int j = 0; j < scoredPool.size(); j++) {
                 System.out.print(scoredPool.get(j).key() + ", ");
             }
 
@@ -163,10 +164,67 @@ public class TeamAssignment {
     }
 
 
-    private TeamList randomTeamsWithPreferences() {
+    public TeamList randomTeamsWithPreferences() {
+
+        TeamList teams = randomTeam();
+
+        Collections.shuffle(preferences);
+
+        //Assigns all team requests that are possible to make.
+        for (Pair<ELOPlayer, ELOPlayer> pair : preferences) {
+            moveToTeamRequest(teams, pair);
+        }
+
+        return teams;
+    }
+
+    private boolean moveToTeamRequest(TeamList teams, Pair<ELOPlayer, ELOPlayer> pair) {
+
+        ELOPlayer player1 = pair.key();
+        ELOPlayer player2 = pair.value();
+
+        int player1Team = teams.findPlayersTeam(player1);
+        int player2Team = teams.findPlayersTeam(player2);
+
+        //If the team request is already in a team, skip it.
+        if (player1Team == player2Team) {
+            return true;
+        }
+
+        ELOPlayer replacePlayerTeam1 = teams.getTeam(player1Team).findOtherPlayerInTeam(player1);
+        if (replacePlayerTeam1 != null) {
+            teams.swapPlayerTeams(player1Team, player2Team, replacePlayerTeam1, player2);
+            return true;
+        }
+
+        ELOPlayer replacePlayerTeam2 = teams.getTeam(player2Team).findOtherPlayerInTeam(player2);
+        if (replacePlayerTeam2 != null) {
+            teams.swapPlayerTeams(player1Team, player2Team, player1, replacePlayerTeam2);
+            return true;
+        }
+
+
+        //At this point we can't move these players into the same team in one of the requested teams. We instead need to swap both
+        for (int i = 0; i < nTeams; i++){
+            ELOPlayer replacePlayer1 = teams.getTeam(i).findOtherPlayerInTeam(null);
+            ELOPlayer replacePlayer2 = teams.getTeam(i).findOtherPlayerInTeam(replacePlayer1);
+
+            if (replacePlayer1 != null && replacePlayer2 != null) {
+                teams.swapPlayerTeams(i, player1Team, replacePlayer1, player1);
+                teams.swapPlayerTeams(i, player2Team, replacePlayer2, player2);
+                return true;
+            }
+
+        }
+
+        System.out.println("No swap possible");
+        return false;
+    }
+
+    public TeamList randomTeam() {
 
         Collections.shuffle(players);
-        Collections.shuffle(preferences);
+
 
         //Throws all players into random teams
         TeamList teams = new TeamList();
@@ -175,42 +233,17 @@ public class TeamAssignment {
             Team team = new Team(teamPlayers);
             teams.addTeam(team);
         }
-
-        //Assigns all team requests that are possible to make.
-        for (Pair<ELOPlayer, ELOPlayer> pair : preferences) {
-            ELOPlayer player1 = pair.key();
-            ELOPlayer player2 = pair.value();
-            int player1Team = teams.findPlayersTeam(player1);
-            int player2Team = teams.findPlayersTeam(player2);
-
-            //If the team request is already in a team, skip it.
-            if (player1Team == player2Team){
-                continue;
-            }
-
-            ELOPlayer replacePlayerTeam1 = teams.getTeam(player1Team).findOtherPlayerInTeam(player1);
-            if (replacePlayerTeam1 != null) {
-                teams.swapPlayerTeams(player1Team, player2Team, replacePlayerTeam1, player2);
-            } else {
-                ELOPlayer replacePlayerTeam2 = teams.getTeam(player2Team).findOtherPlayerInTeam(player2);
-                if (replacePlayerTeam2 != null) {
-                    teams.swapPlayerTeams(player1Team, player2Team, player1, replacePlayerTeam2);
-
-                }
-            }
-        }
-
         return teams;
     }
 
 
     /**
      * Determines how good the team assignment is
-     * @param teams       The teams
-     * @param preferences The team request preferences
+     *
+     * @param teams The teams
      * @return A score between 0 and 100, where 100 is perfect
      */
-    public static int scoreFunction(TeamList teams, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
+    public int scoreFunction(TeamList teams) {
         int satisfiedPreferences = 0;
         for (Pair<ELOPlayer, ELOPlayer> pair : preferences) {
             ELOPlayer player1 = pair.key();
@@ -221,7 +254,7 @@ public class TeamAssignment {
         System.out.println("Satisfied preferences: " + satisfiedPreferences + " / " + preferences.size() + " = " + satisfiedPreferences / (double) preferences.size() + "%");
 
         //% of preferences filled
-        double prefScore = 100.0 * (satisfiedPreferences / (double) preferences.size());
+        double prefScore = preferences.size() > 0 ? 100.0 * (satisfiedPreferences / (double) preferences.size()) : 100.0;
         List<Double> combinedElos = teams.stream()
                 .map(Team::getAverageElo)
                 .collect(Collectors.toList());
@@ -233,11 +266,10 @@ public class TeamAssignment {
     }
 
 
-
-
     /**
      * Variance is a statistical measure that quantifies the spread or dispersion of a set of data points.
      * It provides an indication of how much the individual data points deviate from the mean (average) of the data set.
+     *
      * @param elos The elos to calculate the variance from
      * @return the variance of the elos
      */
@@ -245,7 +277,8 @@ public class TeamAssignment {
         double mean = mean(elos);
         double sum = 0.0;
         for (double elo : elos) {
-            sum += Math.pow(elo - mean, 2);;
+            sum += Math.pow(elo - mean, 2);
+            ;
         }
         return sum / elos.size();
     }

@@ -1,12 +1,14 @@
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 
 public class Team {
 
-    private final List<ELOPlayer> team;
+    private final HashSet<ELOPlayer> team;
 
     public Team(List<ELOPlayer> team) {
-        this.team = team;
+        this.team = new HashSet<>(team);
     }
 
     public boolean contains(ELOPlayer player) {
@@ -17,7 +19,7 @@ public class Team {
     public void AddPlayer(ELOPlayer player) {
 
         if (team.size() == 5) {
-            System.out.println("ERROR");
+            System.out.println("TEAM SIZE EXCEEDED 5");
         }
 
         team.add(player);
@@ -30,12 +32,12 @@ public class Team {
      * @return If there is no player in the team that is not with the req, return null. Otherwise, return the player that can be swapped
      */
     public ELOPlayer findOtherPlayerInTeam(ELOPlayer player) {
-        for (int i = 0; i < team.size(); i++) {
-            if (team.get(i) == player || team.contains(team.get(i).teamRequest)) {
+        for (var inTeam : team) {
+            if (inTeam == player || team.contains(inTeam.teamRequest)) {
                 continue;
             }
 
-            return team.get(i);
+            return inTeam;
         }
         return null;
     }
@@ -43,7 +45,9 @@ public class Team {
 
 
     public void removePlayer(ELOPlayer player) {
-        team.remove(player);
+        if (!team.remove(player)){
+            System.out.println("Player not in team");
+        }
 
     }
 
@@ -55,8 +59,32 @@ public class Team {
         return team.size();
     }
 
-    public ELOPlayer getPlayer(int index) {
-        return team.get(index);
+    public ELOPlayer getRandomPlayer() {
+        int size = team.size();
+        int item = new Random().nextInt(size);
+        int i = 0;
+        for (var obj : team) {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return null;
+    }
+
+    public ELOPlayer getRandomPlayer(ELOPlayer notThis) {
+
+        HashSet<ELOPlayer> teamCopy = new HashSet<>(this.team);
+        teamCopy.remove(notThis);
+
+        int size = teamCopy.size();
+        int item = new Random().nextInt(size);
+        int i = 0;
+        for (var obj : teamCopy) {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return null;
     }
 
     public Stream<ELOPlayer> stream() {
