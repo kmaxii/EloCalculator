@@ -83,34 +83,41 @@ public class TeamAssignment {
 
         for (int i = 0; i < nGenerations; i++) {
 
-            List<TeamList> children1 = new ArrayList<>();
-            List<TeamList> children2 = new ArrayList<>();
-
-            for (int j = 0; j < scoredPool.size() - podium; j++) {
-                children1.add(scoredPool.get(j).value().makeChild());
-                children2.add(scoredPool.get(j).value().makeChild());
-            }
-
             List<TeamList> newPool = new ArrayList<>();
 
             for (int j = 0; j < scoredPool.size() - podium; j++) {
-                double s = scoredPool.get(j).key();
-                System.out.println(j);
-                TeamList p = scoredPool.get(j).value();
-                TeamList c1 = children1.get(j);
-                TeamList c2 = children2.get(j);
+                double parentScore = scoredPool.get(j).key();
 
-                double expS = Math.exp(s);
-                double expScoreC1 = Math.exp(scoreFunction(c1, preferences));
-                double expScoreC2 = Math.exp(scoreFunction(c2, preferences));
-                double[] weights = {expS, expScoreC1, expScoreC2};
+                TeamList parent = scoredPool.get(j).value();
+                TeamList child1 = scoredPool.get(j).value().makeChild();
+                TeamList child2 = scoredPool.get(j).value().makeChild();
 
-                TeamList chosenTeam = ChoicesFunction.choices(Arrays.asList(p, c1, c2), weights, random);
+                if (child1 != child2){
+                    System.out.println("Not same children");
+                    System.out.println("Child 1 score" + scoreFunction(child1, preferences));
+                    System.out.println("Child 2 score" + scoreFunction(child2, preferences));
+                }
 
-                System.out.println("Parent: " + expS);
-                System.out.print(", Child 1: " + expScoreC1);
-                System.out.print(", Child 2: " + expScoreC2);
+                double expScoreParent = Math.exp(parentScore);
+                double expScoreChild1 = Math.exp(scoreFunction(child1, preferences));
+                double expScoreChild2 = Math.exp(scoreFunction(child2, preferences));
+                double[] weights = {expScoreParent, expScoreChild1, expScoreChild2};
+
+                TeamList chosenTeam = ChoicesFunction.choices(Arrays.asList(parent, child1, child2), weights, random);
+
+                System.out.println("Parent: " + expScoreParent);
+                System.out.print(", Child 1: " + expScoreChild1);
+                System.out.print(", Child 2: " + expScoreChild2);
                 System.out.println(", Chosen: " + Math.exp(scoreFunction(chosenTeam, preferences)));
+                if (chosenTeam == parent){
+                    System.out.println("Choose parent");
+                }
+                if (chosenTeam == child1){
+                    System.out.println("Choose child1");
+                }
+                if (chosenTeam == child2){
+                    System.out.println("Choose child2");
+                }
 
                 newPool.add(chosenTeam);
             }
@@ -203,7 +210,7 @@ public class TeamAssignment {
      * @param preferences The team request preferences
      * @return A score between 0 and 100, where 100 is perfect
      */
-    private static int scoreFunction(TeamList teams, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
+    public static int scoreFunction(TeamList teams, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
         int satisfiedPreferences = 0;
         for (Pair<ELOPlayer, ELOPlayer> pair : preferences) {
             ELOPlayer player1 = pair.key();
@@ -211,6 +218,7 @@ public class TeamAssignment {
                 satisfiedPreferences++;
             }
         }
+        System.out.println("Satisfied preferences: " + satisfiedPreferences + " / " + preferences.size() + " = " + satisfiedPreferences / (double) preferences.size() + "%");
 
         //% of preferences filled
         double prefScore = 100.0 * (satisfiedPreferences / (double) preferences.size());
