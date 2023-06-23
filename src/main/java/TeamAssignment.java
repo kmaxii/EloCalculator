@@ -1,61 +1,58 @@
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class TeamAssignment {
 
     private static final int nPlayers = 40;
     private static final int nTeams = 8;
     private static final int playersPerTeam = 5;
-    private static final int poolSize = 100;
+    public static final int poolSize = 100;
     private static final int nGenerations = 400;
 
-    List<ELOPlayer> players;
+    private List<ELOPlayer> players;
+    private List<Pair<ELOPlayer, ELOPlayer>> preferences;
 
     public static void main(String[] args) {
-
-        TeamAssignment teamAssignment = new TeamAssignment();
+        TeamAssignment teamAssignment = RandomTeamAssignment.getRandomTeamAssignment(nPlayers, 7);
         teamAssignment.run();
 
     }
 
+    public TeamAssignment(List<ELOPlayer> players, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
+        this.players = players;
+        this.preferences = preferences;
+    }
+
     public void run() {
 
-        players = randomPlayers();
         System.out.println("There are " + players.size() + " players");
 
-        List<Pair<ELOPlayer, ELOPlayer>> preferences = randomPreferences(7);
-
         for (Pair<ELOPlayer, ELOPlayer> preference : preferences) {
-            preference.key.teamRequest = preference.value;
-            preference.value.teamRequest = preference.key;
+            preference.key().teamRequest = preference.value();
+            preference.value().teamRequest = preference.key();
         }
-
 
         System.out.println("PLAYERS:\n" + players + "\n");
         System.out.println("PREFERENCES:\n" + preferences + "\n");
 
-        List<Pair<Integer, TeamList>> scoredPool = makeAssignments(preferences);
+        List<Pair<Integer, TeamList>> scoredPool = makeAssignments();
         scoredPool.sort(Collections.reverseOrder());
-
 
         System.out.println("FINAL SCORES: ");
         for (int i = 0; i < scoredPool.size(); i++) {
-          //  System.out.println(i + ": " + scoredPool.get(i).key());
+          //  System.out.println(i + ": " + scoredPool.get(i).key()());
             System.out.println(i + ": "  + scoreFunction(scoredPool.get(i).value(), preferences));
         }
 
 
         TeamList teams =  scoredPool.get(0).value();
 
-
-
         System.out.println("SCORE:" + scoreFunction(teams, preferences));
 
         System.out.println("PREFERENCES:");
         for (var preference : preferences){
             System.out.println(preference.key().elo + " " + preference.value().elo);
-            if (teams.findPlayersTeam(preference.key) == teams.findPlayersTeam(preference.value)){
+            if (teams.findPlayersTeam(preference.key()) == teams.findPlayersTeam(preference.value())){
                 System.out.println("TRUE");
             }
 
@@ -71,63 +68,74 @@ public class TeamAssignment {
     }
 
 
-    private List<Pair<Integer, TeamList>> makeAssignments(List<Pair<ELOPlayer, ELOPlayer>> preferences) {
-        final int podium = 10;
-        var pool = initPool(preferences);
 
-        //Gets how good all team assignments are
-        List<Pair<Integer, TeamList>> scoredPool = pool.stream()
-                .map(teams -> new Pair<>(scoreFunction(teams, preferences), teams))
-                .sorted(Comparator.comparing(e -> e.key))
-                .sorted(Collections.reverseOrder())
-                .collect(Collectors.toList());
+    public List<Pair<Integer, TeamList>> makeAssignments() {
+        int podium = 10;
+        List<TeamList> pool = initPool();
+        List<Pair<Integer, TeamList>> scoredPool = new ArrayList<>();
 
-        for (int i = 0; i < TeamAssignment.nGenerations; i++) {
-            List<TeamList> children1 = scoredPool.stream()
-                    .limit(scoredPool.size() - podium)
-                    .map(o -> makeChild(o.value))
-                    .toList();
+        for (TeamList teams : pool) {
+            scoredPool.add(new Pair<>(scoreFunction(teams, preferences), teams));
+        }
+        Collections.sort(scoredPool, Collections.reverseOrder());
 
-            List<TeamList> children2 = scoredPool.stream()
-                            .limit(scoredPool.size() - podium)
-                    .map(o -> makeChild(o.value))
-                    .toList();
+        Random random = new Random();
 
-            Random random = new Random();
-            List<Pair<Integer, TeamList>> finalScoredPool = scoredPool;
-            List<TeamList> newPool = IntStream.range(0, scoredPool.size() - podium)
-                    .mapToObj(j -> {
-                        int parentScore = finalScoredPool.get(j).key();
-                        TeamList parent = finalScoredPool.get(j).value();
-                        TeamList child1 = children1.get(j);
-                        TeamList child2 = children2.get(j);
-                        double w0 = Math.exp(parentScore);
-                        double w1 = Math.exp(scoreFunction(child1, preferences));
-                        double w2 = Math.exp(scoreFunction(child2, preferences));
-                        double[] weights = {w0, w1, w2};
-                        return ChoicesFunction.choices(Arrays.asList(parent, child1, child2), weights, random);
-                    })
-                    .toList();
+        for (int i = 0; i < nGenerations; i++) {
 
+            List<TeamList> children1 = new ArrayList<>();
+            List<TeamList> children2 = new ArrayList<>();
 
-            List<Pair<Integer, TeamList>> top10TeamsBefore = IntStream.range(0, podium)
-                    .mapToObj(finalScoredPool::get).toList();
+            for (int j = 0; j < scoredPool.size() - podium; j++) {
+                children1.add(scoredPool.get(j).value().makeChild());
+                children2.add(scoredPool.get(j).value().makeChild());
+            }
 
-            scoredPool = newPool.stream()
-                    .map(teams -> new Pair<>(scoreFunction(teams, preferences), teams))
-                    .collect(Collectors.toList());
+            List<TeamList> newPool = new ArrayList<>();
 
+            for (int j = 0; j < scoredPool.size() - podium; j++) {
+                double s = scoredPool.get(j).key();
+                System.out.println(j);
+                TeamList p = scoredPool.get(j).value();
+                TeamList c1 = children1.get(j);
+                TeamList c2 = children2.get(j);
 
+                double expS = Math.exp(s);
+                double expScoreC1 = Math.exp(scoreFunction(c1, preferences));
+                double expScoreC2 = Math.exp(scoreFunction(c2, preferences));
+                double[] weights = {expS, expScoreC1, expScoreC2};
 
-            scoredPool.addAll(top10TeamsBefore.stream().map(pair -> new Pair<>(scoreFunction(pair.value, preferences), pair.value)).toList());
+                TeamList chosenTeam = ChoicesFunction.choices(Arrays.asList(p, c1, c2), weights, random);
 
+                System.out.println("Parent: " + expS);
+                System.out.print(", Child 1: " + expScoreC1);
+                System.out.print(", Child 2: " + expScoreC2);
+                System.out.println(", Chosen: " + Math.exp(scoreFunction(chosenTeam, preferences)));
+
+                newPool.add(chosenTeam);
+            }
+
+            for (int j = 0; j < podium; j++) {
+                newPool.add(scoredPool.get(j).value());
+            }
+
+            scoredPool = new ArrayList<>();
+
+            for (TeamList teams : newPool) {
+                scoredPool.add(new Pair<>(scoreFunction(teams, preferences), teams));
+            }
             scoredPool = scoredPool.stream()
-                    .sorted(Comparator.comparing(e -> e.key))
+                    .sorted(Comparator.comparing(e -> e.key()))
                     .sorted(Collections.reverseOrder()).collect(Collectors.toList());
 
-            System.out.println("Scored Pool");
-            System.out.println(scoredPool.stream().map(e -> e.key).collect(Collectors.toList()));
+            System.out.println("-------------------");
+            System.out.println();
 
+            for (int j = 0; j< scoredPool.size(); j++){
+                System.out.print(scoredPool.get(j).key() + ", ");
+            }
+
+            System.out.println("-------------------");
 
         }
 
@@ -137,18 +145,18 @@ public class TeamAssignment {
     /**
      * Creates a pool of random team assignments. Elo is not cared about here
      *
-     * @param preferences The team preferences, these will be meet when possible.
      * @return The pool of random team assignments
      */
-    private List<TeamList> initPool(List<Pair<ELOPlayer, ELOPlayer>> preferences) {
+    public List<TeamList> initPool() {
         List<TeamList> pool = new ArrayList<>();
         for (int i = 0; i < TeamAssignment.poolSize; i++) {
-            pool.add(randomTeamsWithPreferences(preferences));
+            pool.add(randomTeamsWithPreferences());
         }
         return pool;
     }
 
-    private TeamList randomTeamsWithPreferences(List<Pair<ELOPlayer, ELOPlayer>> preferences) {
+
+    private TeamList randomTeamsWithPreferences() {
 
         Collections.shuffle(players);
         Collections.shuffle(preferences);
@@ -173,11 +181,11 @@ public class TeamAssignment {
                 continue;
             }
 
-            ELOPlayer replacePlayerTeam1 = findOtherPlayerInTeam(teams.getTeam(player1Team), player1);
+            ELOPlayer replacePlayerTeam1 = teams.getTeam(player1Team).findOtherPlayerInTeam(player1);
             if (replacePlayerTeam1 != null) {
                 teams.swapPlayerTeams(player1Team, player2Team, replacePlayerTeam1, player2);
             } else {
-                ELOPlayer replacePlayerTeam2 = findOtherPlayerInTeam(teams.getTeam(player2Team), player2);
+                ELOPlayer replacePlayerTeam2 = teams.getTeam(player2Team).findOtherPlayerInTeam(player2);
                 if (replacePlayerTeam2 != null) {
                     teams.swapPlayerTeams(player1Team, player2Team, player1, replacePlayerTeam2);
 
@@ -185,84 +193,12 @@ public class TeamAssignment {
             }
         }
 
-
         return teams;
     }
 
 
     /**
-     * Looks for a player in the team that is not in a team with their REQ already.
-     *
-     * @param team The team to look for a player
-     * @param player The player which should not be selected
-     * @return If there is no player in the team that is not with the req, return null. Otherwise, return the player that can be swapped
-     */
-    private static ELOPlayer findOtherPlayerInTeam(Team team, ELOPlayer player) {
-        for (int i = 0; i < team.size(); i++) {
-            if (team.getPlayer(i) == player || TeamList.inTeamWithReq(team, player)) {
-                continue;
-            }
-
-            return team.getPlayer(i);
-        }
-        return null;
-    }
-
-    /**
-     * Randomly sets team preferences for testing
-     *
-     * @param k The amount of pairs that have a team request
-     * @return A list of pairs that want to team
-     */
-    private List<Pair<ELOPlayer, ELOPlayer>> randomPreferences(int k) {
-
-        List<ELOPlayer> playersCopy = new ArrayList<>(players);
-
-        Collections.shuffle(playersCopy);
-        List<Pair<ELOPlayer, ELOPlayer>> result = new ArrayList<>();
-        for (int i = 0; i < k; i++) {
-            ELOPlayer player1 = playersCopy.get(0);
-            ELOPlayer player2 = playersCopy.get(1);
-            result.add(new Pair<>(player1, player2));
-            playersCopy.remove(player1);
-            playersCopy.remove(player2);
-        }
-        return result;
-    }
-
-    private static List<ELOPlayer> randomPlayers() {
-
-        List<Integer> playersElo = List.of(
-                1627, 2343, 1683, 980, 1285, 826, 1307, 1682, 1488, 1504, 1627, 1948, 1390, 1204,
-                975, 1370, 1044, 1497, 1526, 1427, 1515, 1414, 1141, 764, 1844, 1451, 1864, 1379,
-                2072, 1210, 1683, 1006, 1030, 872, 985, 1016, 1512, 1203, 1442, 1015
-        );
-
-        List<ELOPlayer> result = new ArrayList<>();
-        for (int i = 0; i < TeamAssignment.nPlayers; i++) {
-            result.add(new ELOPlayer(generateRandomString(), playersElo.get(i), null));
-        }
-        return result;
-    }
-
-    public static String generateRandomString() {
-        int leftLimit = 97; // letter 'a'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = 5;
-        Random random = new Random();
-        StringBuilder buffer = new StringBuilder(targetStringLength);
-        for (int i = 0; i < targetStringLength; i++) {
-            int randomLimitedInt = leftLimit + (int)
-                    (random.nextFloat() * (rightLimit - leftLimit + 1));
-            buffer.append((char) randomLimitedInt);
-        }
-        return buffer.toString();
-    }
-
-
-    /**
      * Determines how good the team assignment is
-     *
      * @param teams       The teams
      * @param preferences The team request preferences
      * @return A score between 0 and 100, where 100 is perfect
@@ -270,7 +206,7 @@ public class TeamAssignment {
     private static int scoreFunction(TeamList teams, List<Pair<ELOPlayer, ELOPlayer>> preferences) {
         int satisfiedPreferences = 0;
         for (Pair<ELOPlayer, ELOPlayer> pair : preferences) {
-            ELOPlayer player1 = pair.key;
+            ELOPlayer player1 = pair.key();
             if (TeamList.inTeamWithReq(teams.getTeam(teams.findPlayersTeam(player1)), player1)) {
                 satisfiedPreferences++;
             }
@@ -285,33 +221,10 @@ public class TeamAssignment {
 
         int totalScore = (int) (prefScore + eloScore);
 
-        System.out.println(totalScore);
-
-
         return totalScore;
     }
 
 
-    /**
-     * Swaps two random players in a random team.
-     *
-     * @param teams The teams
-     * @return A new list of teams with the swapped players (not a reference)
-     */
-    private static TeamList makeChild(TeamList teams) {
-
-        Random random = new Random();
-        int randomTeam1 = random.nextInt(teams.teamAmount());
-        int randomTeam2 = random.nextInt(teams.teamAmount());
-        int randomPlayer1Index = random.nextInt(playersPerTeam);
-        int randomPlayer2Index = random.nextInt(playersPerTeam);
-
-        TeamList newTeams = new TeamList(teams);
-
-        newTeams.swapPlayerTeams(randomTeam1, randomTeam2, randomPlayer1Index, randomPlayer2Index);
-
-        return newTeams;
-    }
 
 
     /**
@@ -320,12 +233,11 @@ public class TeamAssignment {
      * @param elos The elos to calculate the variance from
      * @return the variance of the elos
      */
-    private static double pVariance(List<Double> elos) {
+    public static double pVariance(List<Double> elos) {
         double mean = mean(elos);
         double sum = 0.0;
         for (double elo : elos) {
-            double diff = elo - mean;
-            sum += diff * diff;
+            sum += Math.pow(elo - mean, 2);;
         }
         return sum / elos.size();
     }
@@ -335,23 +247,8 @@ public class TeamAssignment {
         for (double elo : elos) {
             sum += elo;
         }
-        return sum / elos.size();
+        return sum / elos.size() * 1.0f;
     }
 
-    private record Pair<K, V>(K key, V value) implements Comparable<Pair<K, V>> {
 
-        @Override
-            public int compareTo(Pair<K, V> other) {
-                if (key instanceof Comparable) {
-                    Comparable<K> comparableKey = (Comparable<K>) key;
-                    return comparableKey.compareTo(other.key());
-                }
-                throw new UnsupportedOperationException("Key does not implement Comparable.");
-            }
-
-            @Override
-            public String toString() {
-                return "(" + key + ", " + value + ")";
-            }
-        }
 }

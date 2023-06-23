@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Stream;
 
 public class TeamList implements Iterable<Team> {
@@ -66,6 +67,30 @@ public class TeamList implements Iterable<Team> {
             }
         }
         throw new IllegalArgumentException("Player " + player + " not found in any team.");
+    }
+
+
+
+    /**
+     * Swaps two random players in a random team.
+     *
+     * @return A new list of teams with the swapped players (not a reference)
+     */
+    public TeamList makeChild() {
+
+        int playersPerTeam = teams.get(0).size();
+
+        Random random = new Random();
+        int randomTeam1 = random.nextInt(teams.size());
+        int randomTeam2 = random.nextInt(teams.size());
+        int randomPlayer1Index = random.nextInt(playersPerTeam);
+        int randomPlayer2Index = random.nextInt(playersPerTeam);
+
+        TeamList newTeams = new TeamList(this);
+
+        newTeams.swapPlayerTeams(randomTeam1, randomTeam2, randomPlayer1Index, randomPlayer2Index);
+
+        return newTeams;
     }
 
     @Override

@@ -23,6 +23,25 @@ public class Team {
         team.add(player);
     }
 
+    /**
+     * Looks for a player in the team that is not in a team with their REQ already.
+     *
+     * @param player The player which should not be selected
+     * @return If there is no player in the team that is not with the req, return null. Otherwise, return the player that can be swapped
+     */
+    public ELOPlayer findOtherPlayerInTeam(ELOPlayer player) {
+        for (int i = 0; i < team.size(); i++) {
+            if (team.get(i) == player || team.contains(team.get(i).teamRequest)) {
+                continue;
+            }
+
+            return team.get(i);
+        }
+        return null;
+    }
+
+
+
     public void removePlayer(ELOPlayer player) {
         team.remove(player);
 
@@ -44,8 +63,12 @@ public class Team {
         return team.stream();
     }
 
+
     @Override
     public String toString() {
         return team.toString();
     }
+
+
+
 }
