@@ -10,8 +10,19 @@ public class TeamAssignment {
     private static final int nPlayers = 40;
     private static final int nTeams = 8;
     private static final int playersPerTeam = 5;
-    public static final int poolSize = 100;
-    private static final int nGenerations = 400;
+    private static final int nGenerations = 400; //(low = faster algorithm, high = better teams)
+    public static final int poolSize = 100; //(low = faster algorithm, high = better teams)
+    private static final int podium = 10;  //(must be between 0 and pool_size // 2)
+
+    /**
+     * A number between 0 and 2. the higher it is the more it will care about preferences and the lower it is the more it will care
+     * about elo balance.
+     *
+     * At 2, it ignores elo and at 0 it ignores preferences
+     */
+    private static final float prefEloBalance = 1;
+
+
 
     private final List<ELOPlayer> players;
     public List<Pair<ELOPlayer, ELOPlayer>> preferences;
@@ -66,7 +77,6 @@ public class TeamAssignment {
 
 
     public List<Pair<Integer, TeamList>> makeAssignments() {
-        int podium = 10;
         List<TeamList> pool = initPool();
         List<Pair<Integer, TeamList>> scoredPool = new ArrayList<>();
 
@@ -225,7 +235,7 @@ public class TeamAssignment {
                 .collect(Collectors.toList());
         double eloScore = (500000.0 - pVariance(combinedElos)) / 5000.0;
 
-        return (int) (prefScore + eloScore);
+        return (int) (prefScore * prefEloBalance + eloScore * (2 - prefEloBalance));
     }
 
 
