@@ -18,7 +18,10 @@ public class TeamAssignment {
 
     public static void main(String[] args) {
         TeamAssignment teamAssignment = RandomTeamAssignment.getRandomTeamAssignment(nPlayers, 7);
-        teamAssignment.run();
+        TeamList teams = teamAssignment.calculateTeams();
+
+        System.out.println("TEAMS:");
+        teams.printELOS();
 
     }
 
@@ -32,10 +35,9 @@ public class TeamAssignment {
         }
     }
 
-    public void run() {
+    public TeamList calculateTeams() {
 
         System.out.println("There are " + players.size() + " players");
-
 
         System.out.println("PLAYERS:\n" + players + "\n");
         System.out.println("PREFERENCES:\n" + preferences + "\n");
@@ -44,22 +46,22 @@ public class TeamAssignment {
         scoredPool.sort(Collections.reverseOrder());
 
         TeamList teams = scoredPool.get(0).value();
-
         System.out.println("SCORE:" + scoreFunction(teams));
 
         System.out.println("PREFERENCES:");
+        printPreferences(teams);
+
+        return teams;
+    }
+
+
+    private void printPreferences(TeamList teams) {
         for (var preference : preferences) {
             System.out.println(preference.key().elo + " " + preference.value().elo);
             if (teams.findPlayersTeam(preference.key()) == teams.findPlayersTeam(preference.value())) {
                 System.out.println("TRUE");
             }
-
         }
-
-
-        System.out.println("TEAMS:");
-
-        teams.printELOS();
     }
 
 
