@@ -1,3 +1,5 @@
+import me.kmaxi.elocalculator.teamassigner.RandomTeamAssignment;
+import me.kmaxi.elocalculator.teamassigner.TeamList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

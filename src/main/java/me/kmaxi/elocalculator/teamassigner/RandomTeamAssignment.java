@@ -1,3 +1,7 @@
+package me.kmaxi.elocalculator.teamassigner;
+
+import me.kmaxi.elocalculator.ELOPlayer;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

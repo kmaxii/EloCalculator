@@ -1,3 +1,8 @@
+import me.kmaxi.elocalculator.*;
+import me.kmaxi.elocalculator.teamassigner.RandomTeamAssignment;
+import me.kmaxi.elocalculator.teamassigner.Team;
+import me.kmaxi.elocalculator.teamassigner.TeamAssignment;
+import me.kmaxi.elocalculator.teamassigner.TeamList;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;

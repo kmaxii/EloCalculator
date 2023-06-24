@@ -1,3 +1,5 @@
+package me.kmaxi.elocalculator.teamassigner;
+
 import java.util.List;
 import java.util.Random;
 

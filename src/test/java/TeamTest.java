@@ -1,3 +1,7 @@
+import me.kmaxi.elocalculator.ELOPlayer;
+import me.kmaxi.elocalculator.teamassigner.RandomTeamAssignment;
+import me.kmaxi.elocalculator.teamassigner.Team;
+import me.kmaxi.elocalculator.teamassigner.TeamList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -69,8 +73,8 @@ public class TeamTest {
         Assertions.assertTrue(team1.contains(test2player4));
 
 
-        System.out.println("Team 1 size: " + team1.size());
-        System.out.println("Team 2 size: " + team2.size());
+        System.out.println("me.kmaxi.elocalculator.teamassigner.Team 1 size: " + team1.size());
+        System.out.println("me.kmaxi.elocalculator.teamassigner.Team 2 size: " + team2.size());
 
         System.out.println(team1);
         System.out.println(team2);

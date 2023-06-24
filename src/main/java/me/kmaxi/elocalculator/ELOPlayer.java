@@ -1,4 +1,6 @@
-class ELOPlayer
+package me.kmaxi.elocalculator;
+
+public class ELOPlayer
 {
     public String name;
     public int place     = 0;
@@ -17,7 +19,7 @@ class ELOPlayer
 
     @Override
     public String toString() {
-        return "ELOPlayer{" +
+        return "me.kmaxi.elocalculator.ELOPlayer{" +
                 "name='" + name + '\'' +
                 ", elo=" + elo +
                 '}';

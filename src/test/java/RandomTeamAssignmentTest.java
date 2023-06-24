@@ -1,3 +1,6 @@
+import me.kmaxi.elocalculator.ELOPlayer;
+import me.kmaxi.elocalculator.teamassigner.Pair;
+import me.kmaxi.elocalculator.teamassigner.RandomTeamAssignment;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;

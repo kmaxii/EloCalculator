@@ -1,3 +1,7 @@
+package me.kmaxi.elocalculator.calculator;
+
+import me.kmaxi.elocalculator.ELOPlayer;
+
 import java.util.*;
 import java.lang.*;
 
@@ -77,7 +81,7 @@ class EloCalculator
 
     @Override
     public String toString() {
-        //Return a string with all ELOPlayer
+        //Return a string with all me.kmaxi.elocalculator.ELOPlayer
         StringBuilder s = new StringBuilder();
         for (ELOPlayer p : players)
         {

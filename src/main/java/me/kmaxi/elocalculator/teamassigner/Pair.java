@@ -1,3 +1,5 @@
+package me.kmaxi.elocalculator.teamassigner;
+
 public record Pair<K, V>(K key, V value) implements Comparable<Pair<K, V>> {
 
     @Override

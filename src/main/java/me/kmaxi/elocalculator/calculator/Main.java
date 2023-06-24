@@ -1,3 +1,7 @@
+package me.kmaxi.elocalculator.calculator;
+
+import me.kmaxi.elocalculator.calculator.EloCalculator;
+
 public class Main {
 
     public static void main(String[] args) {

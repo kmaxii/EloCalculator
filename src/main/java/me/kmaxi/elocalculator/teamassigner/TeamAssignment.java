@@ -1,3 +1,7 @@
+package me.kmaxi.elocalculator.teamassigner;
+
+import me.kmaxi.elocalculator.ELOPlayer;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,7 +13,7 @@ public class TeamAssignment {
     public static final int poolSize = 100;
     private static final int nGenerations = 400;
 
-    private List<ELOPlayer> players;
+    private final List<ELOPlayer> players;
     public List<Pair<ELOPlayer, ELOPlayer>> preferences;
 
     public static void main(String[] args) {
@@ -67,7 +71,7 @@ public class TeamAssignment {
         for (TeamList teams : pool) {
             scoredPool.add(new Pair<>(scoreFunction(teams), teams));
         }
-        Collections.sort(scoredPool, Collections.reverseOrder());
+        scoredPool.sort(Collections.reverseOrder());
 
         Random random = new Random();
 
@@ -102,9 +106,8 @@ public class TeamAssignment {
                 scoredPool.add(new Pair<>(scoreFunction(teams), teams));
             }
             scoredPool = scoredPool.stream()
-                    .sorted(Comparator.comparing(e -> e.key()))
+                    .sorted(Comparator.comparing(Pair::key))
                     .sorted(Collections.reverseOrder()).collect(Collectors.toList());
-
 
 
         }
@@ -140,7 +143,7 @@ public class TeamAssignment {
         return teams;
     }
 
-    private boolean moveToTeamRequest(TeamList teams, Pair<ELOPlayer, ELOPlayer> pair) {
+    private void moveToTeamRequest(TeamList teams, Pair<ELOPlayer, ELOPlayer> pair) {
 
         ELOPlayer player1 = pair.key();
         ELOPlayer player2 = pair.value();
@@ -150,37 +153,36 @@ public class TeamAssignment {
 
         //If the team request is already in a team, skip it.
         if (player1Team == player2Team) {
-            return true;
+            return;
         }
 
         ELOPlayer replacePlayerTeam1 = teams.getTeam(player1Team).findOtherPlayerInTeam(player1);
         if (replacePlayerTeam1 != null) {
             teams.swapPlayerTeams(player1Team, player2Team, replacePlayerTeam1, player2);
-            return true;
+            return;
         }
 
         ELOPlayer replacePlayerTeam2 = teams.getTeam(player2Team).findOtherPlayerInTeam(player2);
         if (replacePlayerTeam2 != null) {
             teams.swapPlayerTeams(player1Team, player2Team, player1, replacePlayerTeam2);
-            return true;
+            return;
         }
 
 
         //At this point we can't move these players into the same team in one of the requested teams. We instead need to swap both
-        for (int i = 0; i < nTeams; i++){
+        for (int i = 0; i < nTeams; i++) {
             ELOPlayer replacePlayer1 = teams.getTeam(i).findOtherPlayerInTeam(null);
             ELOPlayer replacePlayer2 = teams.getTeam(i).findOtherPlayerInTeam(replacePlayer1);
 
             if (replacePlayer1 != null && replacePlayer2 != null) {
                 teams.swapPlayerTeams(i, player1Team, replacePlayer1, player1);
                 teams.swapPlayerTeams(i, player2Team, replacePlayer2, player2);
-                return true;
+                return;
             }
 
         }
 
         System.out.println("No swap possible");
-        return false;
     }
 
     public TeamList randomTeam() {
@@ -221,9 +223,7 @@ public class TeamAssignment {
                 .collect(Collectors.toList());
         double eloScore = (500000.0 - pVariance(combinedElos)) / 5000.0;
 
-        int totalScore = (int) (prefScore + eloScore);
-
-        return totalScore;
+        return (int) (prefScore + eloScore);
     }
 
 
@@ -239,7 +239,6 @@ public class TeamAssignment {
         double sum = 0.0;
         for (double elo : elos) {
             sum += Math.pow(elo - mean, 2);
-            ;
         }
         return sum / elos.size();
     }

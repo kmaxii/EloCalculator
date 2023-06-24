@@ -1,3 +1,7 @@
+package me.kmaxi.elocalculator.teamassigner;
+
+import me.kmaxi.elocalculator.ELOPlayer;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -9,7 +13,7 @@ public class TeamList implements Iterable<Team> {
 
      /**
      * Copy constructor
-     * @param teamList The TeamList to copy
+     * @param teamList The me.kmaxi.elocalculator.teamassigner.TeamList to copy
      */
     public TeamList(TeamList teamList) {
         this.teams = teamList.stream().map(Team::copy).toList();
@@ -30,10 +34,6 @@ public class TeamList implements Iterable<Team> {
         teams.add(team);
     }
 
-    //Remove team
-    public void removeTeam(Team team){
-        teams.remove(team);
-    }
 
     public void swapPlayerTeams(int team1, int team2, ELOPlayer player1, ELOPlayer player2){
         if (team1 == team2)
