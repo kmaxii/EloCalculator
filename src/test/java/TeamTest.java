@@ -1,13 +1,11 @@
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
-
 public class TeamTest {
 
 
     @Test
-    public void TestFindOtherPlayerInTeam(){
+    public void TestFindOtherPlayerInTeam() {
         var players = RandomTeamAssignment.randomPlayers(40);
         Team team = new Team(players.stream().limit(5).toList());
         Assertions.assertEquals(team.size(), 5);
@@ -26,7 +24,7 @@ public class TeamTest {
     }
 
     @Test
-    public void SwapTeamTest(){
+    public void SwapTeamTest() {
         Team team1 = new Team(RandomTeamAssignment.randomPlayers(5));
         Team team2 = new Team(RandomTeamAssignment.randomPlayers(5));
 

@@ -33,19 +33,11 @@ public class TeamAssignment {
         System.out.println("There are " + players.size() + " players");
 
 
-
         System.out.println("PLAYERS:\n" + players + "\n");
         System.out.println("PREFERENCES:\n" + preferences + "\n");
 
         List<Pair<Integer, TeamList>> scoredPool = makeAssignments();
         scoredPool.sort(Collections.reverseOrder());
-
-        System.out.println("FINAL SCORES: ");
-        for (int i = 0; i < scoredPool.size(); i++) {
-            //  System.out.println(i + ": " + scoredPool.get(i).key()());
-            System.out.println(i + ": " + scoreFunction(scoredPool.get(i).value()));
-        }
-
 
         TeamList teams = scoredPool.get(0).value();
 
@@ -90,38 +82,12 @@ public class TeamAssignment {
                 TeamList child1 = scoredPool.get(j).value().makeChild();
                 TeamList child2 = scoredPool.get(j).value().makeChild();
 
-                if (child1 != child2) {
-                    System.out.println("Not same children");
-                    System.out.println("Parent score: " + scoreFunction(parent));
-                    parent.printELOS();
-
-                    System.out.println("Child 1 score: " + scoreFunction(child1));
-                    child1.printELOS();
-                    System.out.println("Child 2 score: " + scoreFunction(child2));
-                    child2.printELOS();
-
-                }
-
                 double expScoreParent = Math.exp(parentScore);
                 double expScoreChild1 = Math.exp(scoreFunction(child1));
                 double expScoreChild2 = Math.exp(scoreFunction(child2));
                 double[] weights = {expScoreParent, expScoreChild1, expScoreChild2};
 
                 TeamList chosenTeam = ChoicesFunction.choices(Arrays.asList(parent, child1, child2), weights, random);
-
-                System.out.println("Parent: " + expScoreParent);
-                System.out.print(", Child 1: " + expScoreChild1);
-                System.out.print(", Child 2: " + expScoreChild2);
-                System.out.println(", Chosen: " + Math.exp(scoreFunction(chosenTeam)));
-                if (chosenTeam == parent) {
-                    System.out.println("Choose parent");
-                }
-                if (chosenTeam == child1) {
-                    System.out.println("Choose child1");
-                }
-                if (chosenTeam == child2) {
-                    System.out.println("Choose child2");
-                }
 
                 newPool.add(chosenTeam);
             }
@@ -139,14 +105,7 @@ public class TeamAssignment {
                     .sorted(Comparator.comparing(e -> e.key()))
                     .sorted(Collections.reverseOrder()).collect(Collectors.toList());
 
-            System.out.println("-------------------");
-            System.out.println();
 
-            for (int j = 0; j < scoredPool.size(); j++) {
-                System.out.print(scoredPool.get(j).key() + ", ");
-            }
-
-            System.out.println("-------------------");
 
         }
 
@@ -254,7 +213,6 @@ public class TeamAssignment {
                 satisfiedPreferences++;
             }
         }
-        System.out.println("Satisfied preferences: " + satisfiedPreferences + " / " + preferences.size() + " = " + satisfiedPreferences / (double) preferences.size() + "%");
 
         //% of preferences filled
         double prefScore = preferences.size() > 0 ? 100.0 * (satisfiedPreferences / (double) preferences.size()) : 100.0;

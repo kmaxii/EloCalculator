@@ -81,31 +81,10 @@ public class TeamList implements Iterable<Team> {
         int randomTeam1 = random.nextInt(newTeams.teamAmount());
         int randomTeam2 = random.nextInt(newTeams.teamAmount());
 
-        System.out.println("Team 1: " + randomTeam1);
-        System.out.println("Team 2: " + randomTeam2);
-
         ELOPlayer randomPlayer1 = newTeams.getTeam(randomTeam1).getRandomPlayer();
         ELOPlayer randomPlayer2 = newTeams.getTeam(randomTeam2).getRandomPlayer();
 
-
-        System.out.println("Player 1: " + randomPlayer1);
-        System.out.println("Player 2: " + randomPlayer2);
-
-        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer1));
-        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer2));
-
-        System.out.println("In old team: " + findPlayersTeam(randomPlayer1));
-        System.out.println("In old team: " + findPlayersTeam(randomPlayer2));
-
-
-
         newTeams.swapPlayerTeams(randomTeam1, randomTeam2, randomPlayer1, randomPlayer2);
-
-        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer1));
-        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer2));
-
-        System.out.println("In old team: " + findPlayersTeam(randomPlayer1));
-        System.out.println("In old team: " + findPlayersTeam(randomPlayer2));
 
         return newTeams;
     }
