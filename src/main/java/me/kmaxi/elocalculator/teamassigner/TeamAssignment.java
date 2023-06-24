@@ -17,7 +17,7 @@ public class TeamAssignment {
     /**
      * A number between 0 and 2. the higher it is the more it will care about preferences and the lower it is the more it will care
      * about elo balance.
-     *
+     * <p>
      * At 2, it ignores elo and at 0 it ignores preferences
      */
     private static final float prefEloBalance = 1;
@@ -68,9 +68,10 @@ public class TeamAssignment {
 
     private void printPreferences(TeamList teams) {
         for (var preference : preferences) {
-            System.out.println(preference.key().elo + " " + preference.value().elo);
             if (teams.findPlayersTeam(preference.key()) == teams.findPlayersTeam(preference.value())) {
-                System.out.println("TRUE");
+                System.out.println(preference.key().elo + " " + preference.value().elo + " TRUE");
+            } else {
+                System.out.println(preference.key().elo + " " + preference.value().elo + " FALSE");
             }
         }
     }

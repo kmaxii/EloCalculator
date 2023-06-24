@@ -11,35 +11,6 @@ class EloCalculator
 {
     private final ArrayList<ELOPlayer> players = new ArrayList<ELOPlayer>();
 
-    public void addPlayer(String name, int place, int elo)
-    {
-        ELOPlayer player = new ELOPlayer(name, elo, null);
-
-        player.place   = place;
-
-        players.add(player);
-    }
-
-    public int getELO(String name)
-    {
-        for (ELOPlayer p : players)
-        {
-            if (p.name.equals(name))
-                return p.eloPost;
-        }
-        return 1500;
-    }
-
-    public int getELOChange(String name)
-    {
-        for (ELOPlayer p : players)
-        {
-            if (p.name.equals(name))
-                return p.eloChange;
-        }
-        return 0;
-    }
-
     public void calculateELOs()
     {
         int n = players.size();
