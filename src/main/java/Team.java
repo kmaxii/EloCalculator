@@ -25,6 +25,19 @@ public class Team {
         team.add(player);
     }
 
+    public Team() {
+        this.team = new HashSet<>();
+    }
+
+    //Copy
+    public Team copy() {
+        Team team1 = new Team();
+        for (var player : team) {
+            team1.AddPlayer(player);
+        }
+        return team1;
+    }
+
     /**
      * Looks for a player in the team that is not in a team with their REQ already.
      *
@@ -43,9 +56,8 @@ public class Team {
     }
 
 
-
     public void removePlayer(ELOPlayer player) {
-        if (!team.remove(player)){
+        if (!team.remove(player)) {
             System.out.println("Player not in team");
         }
 
@@ -97,6 +109,18 @@ public class Team {
         return team.toString();
     }
 
+
+    public boolean compare(Team otherTeam) {
+        if (team.size() != otherTeam.size()) {
+            return false;
+        }
+        for (ELOPlayer i : team) {
+            if (!otherTeam.contains(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
 }

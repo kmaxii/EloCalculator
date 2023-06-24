@@ -62,11 +62,8 @@ public class TeamAssignment {
 
 
         System.out.println("TEAMS:");
-        for (Team team : teams) {
-            //System.out.print(team + " ");
-            List<Double> eLOS = team.stream().map(p -> p.elo * 1.0d).toList();
-            System.out.println(eLOS + " " + mean(eLOS));
-        }
+
+        teams.printELOS();
     }
 
 
@@ -95,8 +92,14 @@ public class TeamAssignment {
 
                 if (child1 != child2) {
                     System.out.println("Not same children");
-                    System.out.println("Child 1 score" + scoreFunction(child1));
-                    System.out.println("Child 2 score" + scoreFunction(child2));
+                    System.out.println("Parent score: " + scoreFunction(parent));
+                    parent.printELOS();
+
+                    System.out.println("Child 1 score: " + scoreFunction(child1));
+                    child1.printELOS();
+                    System.out.println("Child 2 score: " + scoreFunction(child2));
+                    child2.printELOS();
+
                 }
 
                 double expScoreParent = Math.exp(parentScore);
@@ -283,7 +286,7 @@ public class TeamAssignment {
         return sum / elos.size();
     }
 
-    private static double mean(List<Double> elos) {
+    public static double mean(List<Double> elos) {
         double sum = 0.0;
         for (double elo : elos) {
             sum += elo;

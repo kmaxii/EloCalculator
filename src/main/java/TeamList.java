@@ -12,7 +12,7 @@ public class TeamList implements Iterable<Team> {
      * @param teamList The TeamList to copy
      */
     public TeamList(TeamList teamList) {
-        this.teams = new ArrayList<>(teamList.teams);
+        this.teams = teamList.stream().map(Team::copy).toList();
     }
 
 
@@ -74,14 +74,38 @@ public class TeamList implements Iterable<Team> {
     public TeamList makeChild() {
 
         Random random = new Random();
-        int randomTeam1 = random.nextInt(teams.size());
-        int randomTeam2 = random.nextInt(teams.size());
-        ELOPlayer randomPlayer1 = teams.get(randomTeam1).getRandomPlayer();
-        ELOPlayer randomPlayer2 = teams.get(randomTeam2).getRandomPlayer();
 
         TeamList newTeams = new TeamList(this);
 
+
+        int randomTeam1 = random.nextInt(newTeams.teamAmount());
+        int randomTeam2 = random.nextInt(newTeams.teamAmount());
+
+        System.out.println("Team 1: " + randomTeam1);
+        System.out.println("Team 2: " + randomTeam2);
+
+        ELOPlayer randomPlayer1 = newTeams.getTeam(randomTeam1).getRandomPlayer();
+        ELOPlayer randomPlayer2 = newTeams.getTeam(randomTeam2).getRandomPlayer();
+
+
+        System.out.println("Player 1: " + randomPlayer1);
+        System.out.println("Player 2: " + randomPlayer2);
+
+        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer1));
+        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer2));
+
+        System.out.println("In old team: " + findPlayersTeam(randomPlayer1));
+        System.out.println("In old team: " + findPlayersTeam(randomPlayer2));
+
+
+
         newTeams.swapPlayerTeams(randomTeam1, randomTeam2, randomPlayer1, randomPlayer2);
+
+        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer1));
+        System.out.println("In new team: " + newTeams.findPlayersTeam(randomPlayer2));
+
+        System.out.println("In old team: " + findPlayersTeam(randomPlayer1));
+        System.out.println("In old team: " + findPlayersTeam(randomPlayer2));
 
         return newTeams;
     }
@@ -115,6 +139,26 @@ public class TeamList implements Iterable<Team> {
         public Team next() {
             return teams.get(index++);
         }
+    }
+
+    public void printELOS(){
+        for (Team team : teams) {
+            List<Double> eLOS = team.stream().map(p -> p.elo * 1.0d).toList();
+            System.out.println(eLOS + " " + TeamAssignment.mean(eLOS));
+        }
+    }
+
+    public boolean compare(TeamList otherTeam) {
+        if (teamAmount() != otherTeam.teamAmount()) {
+            return false;
+        }
+
+        for (int i = 0; i < teams.size(); i++){
+            if (!teams.get(i).compare(otherTeam.teams.get(i)))
+                return false;
+        }
+
+        return true;
     }
 
 }
